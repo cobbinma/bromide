@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -17,24 +16,14 @@ const folder = "snapshots"
 func Snapshot[K comparable](t *testing.T, item K) {
 	t.Helper()
 
-	update := false
-	if u := os.Getenv("UPDATE_SNAPSHOTS"); u != "" {
-		v, err := strconv.ParseBool(u)
-		if err != nil {
-			t.Errorf("unable to parse boolean : %s", err.Error())
-			return
-		}
-
-		update = v
-	}
-
 	currentDir, err := os.Getwd()
 	if err != nil {
 		t.Errorf("Error getting current directory: %v", err)
 	}
 
 	snapshotDir := fmt.Sprintf("%s/%s", currentDir, folder)
-	name := fmt.Sprintf("%s/%s.snap", snapshotDir, t.Name())
+	accepted := fmt.Sprintf("%s/%s.accepted", snapshotDir, t.Name())
+	neww := fmt.Sprintf("%s/%s.new", snapshotDir, t.Name())
 
 	incoming := serialize(item)
 
@@ -42,13 +31,14 @@ func Snapshot[K comparable](t *testing.T, item K) {
 		panic("unable to create snapshot directory")
 	}
 
-	file, err := os.Open(name)
+	file, err := os.Open(accepted)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			panic("unable to open existing snapshot")
 		}
 
-		file, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0644)
+		// test does not have accepted snapshot
+		file, err := os.OpenFile(neww, os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			panic("unable to create new snapshot" + err.Error())
 		}
@@ -63,6 +53,7 @@ func Snapshot[K comparable](t *testing.T, item K) {
 	}
 	defer file.Close()
 
+	// test has accepted snapshot
 	existing := new(strings.Builder)
 	io.Copy(existing, file)
 
@@ -74,10 +65,7 @@ func Snapshot[K comparable](t *testing.T, item K) {
 		t.Log("snapshot does not match")
 		t.Log(dmp.DiffPrettyText(diffs))
 
-		if update {
-			os.WriteFile(name, []byte(incoming), 0644)
-			return
-		}
+		os.WriteFile(neww, []byte(incoming), 0644)
 
 		t.Fail()
 		return

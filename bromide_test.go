@@ -13,7 +13,7 @@ type testStruct struct {
 
 func Test_Snapshot(t *testing.T) {
 	hello := testStruct{
-		example: "hello",
+		example: "test",
 		again:   5,
 	}
 	bromide.Snapshot(t, hello)
