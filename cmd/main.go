@@ -11,92 +11,137 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+type choice string
+
+const (
+	accept choice = "accept"
+	reject choice = "reject"
+	skip   choice = "skip"
+)
+
+type Snapshot struct {
+	contents []byte
+}
+
+type Review struct {
+	path string
+	old  *Snapshot
+	new  Snapshot
+}
+
 func main() {
 	app := &cli.App{
-		Name:  "file-search",
-		Usage: "Searches for files with a specific extension",
-		Action: func(c *cli.Context) error {
-			if c.NArg() == 0 {
-				fmt.Println("Please provide a directory path.")
-				return nil
-			}
-
-			dir := c.Args().Get(0)
-
-			err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-
-				if !info.IsDir() && filepath.Ext(path) == ".new" {
-					neww, err := os.ReadFile(path)
-					if err != nil {
-						if !os.IsNotExist(err) {
+		Name:  "bromide",
+		Usage: "review tool for bromide snapshot testing",
+		Commands: []*cli.Command{
+			{
+				Name:    "review",
+				Aliases: []string{"r"},
+				Usage:   "review snapshots",
+				Action: func(c *cli.Context) error {
+					reviews := []Review{}
+					if err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+						if err != nil {
 							return err
 						}
-					}
 
-					accepted := strings.TrimSuffix(path, ".new") + ".accepted"
-					existing, err := os.ReadFile(accepted)
-					if err != nil {
-						if !os.IsNotExist(err) {
-							return err
-						}
-					}
+						if !info.IsDir() && filepath.Ext(path) == ".new" {
+							neww, err := os.ReadFile(path)
+							if err != nil {
+								return err
+							}
 
-					dmp := diffmatchpatch.New()
-					diffs := dmp.DiffMain(string(existing), string(neww), true)
-					fmt.Println(dmp.DiffPrettyText(diffs))
-
-					prompt := promptui.Select{
-						Label: "snapshot review",
-						Items: []string{
-							"accept", "reject", "skip",
-						},
-					}
-
-					_, result, err := prompt.Run()
-					if err != nil {
-						fmt.Printf("Prompt failed %v\n", err)
-						return nil
-					}
-
-					switch result {
-					case "accept":
-						{
-							if string(existing) != "" {
-								if err := os.Remove(accepted); err != nil {
+							var old *Snapshot
+							accepted := strings.TrimSuffix(path, ".new") + ".accepted"
+							existing, err := os.ReadFile(accepted)
+							if err != nil {
+								if !os.IsNotExist(err) {
 									return err
+								}
+							} else {
+								old = &Snapshot{
+									contents: existing,
 								}
 							}
 
-							if err := os.Rename(path, accepted); err != nil {
-								return err
-							}
+							reviews = append(reviews, Review{
+								path: strings.TrimSuffix(path, ".new"),
+								old:  old,
+								new:  Snapshot{contents: neww},
+							})
+
 						}
-					case "reject":
-						{
-							if err := os.Remove(path); err != nil {
-								return err
-							}
+
+						return nil
+					}); err != nil {
+						fmt.Println("Error:", err)
+					}
+
+					if len(reviews) == 0 {
+						return nil
+					}
+
+					for i, review := range reviews {
+						path := review.path
+						accepted := string(review.new.contents)
+						existing := ""
+						if review.old != nil {
+							existing = string(review.old.contents)
 						}
-					case "skip":
-						{
+
+						dmp := diffmatchpatch.New()
+						diffs := dmp.DiffMain(existing, accepted, true)
+
+						fmt.Printf("reviewing %v of %v\n", i+1, len(reviews))
+						fmt.Println(dmp.DiffPrettyText(diffs))
+
+						prompt := promptui.Select{
+							Label: "snapshot review",
+							Items: []string{
+								string(accept), string(reject), string(skip),
+							},
+						}
+
+						_, result, err := prompt.Run()
+						if err != nil {
+							fmt.Printf("prompt failed: %v\n", err)
+							return nil
+						}
+
+						switch choice(result) {
+						case accept:
+							{
+								if string(existing) != "" {
+									if err := os.Remove(path + ".accepted"); err != nil {
+										return err
+									}
+								}
+
+								if err := os.Rename(path+".new", path+".accepted"); err != nil {
+									return err
+								}
+							}
+						case reject:
+							{
+								if err := os.Remove(path + ".new"); err != nil {
+									return err
+								}
+							}
+						case skip:
+							{
+							}
 						}
 					}
-				}
-				return nil
-			})
-			if err != nil {
-				fmt.Println("Error:", err)
-			}
 
-			return nil
+					fmt.Printf("reviewed %v snapshot(s) 📸\n", len(reviews))
+
+					return nil
+				},
+			},
 		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
-		fmt.Println("Error:", err)
+	if err := app.Run(os.Args); err != nil {
+		fmt.Println("error:", err)
 	}
 }

@@ -48,7 +48,7 @@ func Snapshot[K comparable](t *testing.T, item K) {
 			panic("unable to create new snapshot")
 		}
 
-		t.Errorf("created snapshot")
+		t.Errorf("new snapshot 📸")
 		return
 	}
 	defer file.Close()
