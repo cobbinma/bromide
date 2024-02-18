@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cobbinma/bromide/internal"
 	"github.com/manifoldco/promptui"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/urfave/cli/v2"
@@ -29,6 +30,10 @@ type Review struct {
 	new  Snapshot
 }
 
+func (r Review) Path(status internal.ReviewState) string {
+	return r.path + status.Extension()
+}
+
 func main() {
 	app := &cli.App{
 		Name:  "bromide",
@@ -45,14 +50,14 @@ func main() {
 							return err
 						}
 
-						if !info.IsDir() && filepath.Ext(path) == ".new" {
+						if !info.IsDir() && filepath.Ext(path) == internal.Accepted.Extension() {
 							neww, err := os.ReadFile(path)
 							if err != nil {
 								return err
 							}
 
 							var old *Snapshot
-							accepted := strings.TrimSuffix(path, ".new") + ".accepted"
+							accepted := strings.TrimSuffix(path, internal.Accepted.Extension()) + internal.Pending.Extension()
 							existing, err := os.ReadFile(accepted)
 							if err != nil {
 								if !os.IsNotExist(err) {
@@ -65,11 +70,10 @@ func main() {
 							}
 
 							reviews = append(reviews, Review{
-								path: strings.TrimSuffix(path, ".new"),
+								path: strings.TrimSuffix(path, internal.Pending.Extension()),
 								old:  old,
 								new:  Snapshot{contents: neww},
 							})
-
 						}
 
 						return nil
@@ -82,7 +86,6 @@ func main() {
 					}
 
 					for i, review := range reviews {
-						path := review.path
 						accepted := string(review.new.contents)
 						existing := ""
 						if review.old != nil {
@@ -112,18 +115,18 @@ func main() {
 						case accept:
 							{
 								if string(existing) != "" {
-									if err := os.Remove(path + ".accepted"); err != nil {
+									if err := os.Remove(review.Path(internal.Accepted)); err != nil {
 										return err
 									}
 								}
 
-								if err := os.Rename(path+".new", path+".accepted"); err != nil {
+								if err := os.Rename(review.Path(internal.Accepted), review.Path(internal.Pending)); err != nil {
 									return err
 								}
 							}
 						case reject:
 							{
-								if err := os.Remove(path + ".new"); err != nil {
+								if err := os.Remove(review.Path(internal.Pending)); err != nil {
 									return err
 								}
 							}
