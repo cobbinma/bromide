@@ -10,7 +10,7 @@ With Bromide, you can easily capture test output and check against an expected v
 
 ## Usage
 
-### Write a test
+### Write
 
 ```sh
 go get github.com/cobbinma/bromide
@@ -26,7 +26,7 @@ func TestSomething(t *testing.T) {
 }
 ```
 
-### Review snapshots
+### Review
 
 ```sh
 go install github.com/cobbinma/bromide/cmd/bromide@master
