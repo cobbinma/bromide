@@ -4,9 +4,9 @@ A snapshot testing library for go 📸
 
 ## Introduction
 
-Bromide is a snapshot library for Go, designed to simplify the process of taking and managing snapshot tests. 
+Bromide is a snapshot library for Go, designed to simplify managing snapshot tests. 
 
-With Bromide, you can easily capture test output and then check against an expected value.
+With Bromide, you can easily capture test output and check against an expected value.
 
 ## Usage
 
