@@ -62,7 +62,7 @@ func Snapshot[K comparable](t *testing.T, item K) {
 		diff := internal.Diff(existing.String(), incoming)
 
 		t.Log("snapshot mismatch")
-		t.Log(diff)
+		t.Log("\n" + diff)
 		t.Log("to update snapshots run `bromide review`")
 
 		os.WriteFile(pendingPath, []byte(incoming), 0644)

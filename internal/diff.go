@@ -1,13 +1,38 @@
 package internal
 
 import (
-	"github.com/sergi/go-diff/diffmatchpatch"
+	"fmt"
+	"strings"
+
+	"github.com/hexops/gotextdiff"
+	"github.com/hexops/gotextdiff/myers"
 )
 
 func Diff(old, new string) string {
-	dmp := diffmatchpatch.New()
+	edits := myers.ComputeEdits("current", old, new)
+	diff := fmt.Sprint(gotextdiff.ToUnified("current", "incoming", old, edits))
 
-	diffs := dmp.DiffMain(old, new, true)
+	out := ""
+	for _, line := range strings.Split(diff, "\n") {
+		green := "\x1b[32m"
+		red := "\x1b[31m"
+		reset := "\x1b[0m"
 
-	return dmp.DiffPrettyText(diffs)
+		addition := strings.HasPrefix(line, "+")
+		subtraction := strings.HasPrefix(line, "-")
+
+		l := ""
+		switch {
+		case addition:
+			l = green + line
+		case subtraction:
+			l = red + line
+		default:
+			l = reset + line
+		}
+
+		out = out + l + "\n"
+	}
+
+	return out
 }
