@@ -50,14 +50,14 @@ func main() {
 							return err
 						}
 
-						if !info.IsDir() && filepath.Ext(path) == internal.Accepted.Extension() {
+						if !info.IsDir() && filepath.Ext(path) == internal.Pending.Extension() {
 							neww, err := os.ReadFile(path)
 							if err != nil {
 								return err
 							}
 
 							var old *Snapshot
-							accepted := strings.TrimSuffix(path, internal.Accepted.Extension()) + internal.Pending.Extension()
+							accepted := strings.TrimSuffix(path, internal.Pending.Extension()) + internal.Accepted.Extension()
 							existing, err := os.ReadFile(accepted)
 							if err != nil {
 								if !os.IsNotExist(err) {
@@ -78,7 +78,7 @@ func main() {
 
 						return nil
 					}); err != nil {
-						fmt.Println("Error:", err)
+						fmt.Println("error: ", err)
 					}
 
 					if len(reviews) == 0 {
@@ -120,7 +120,7 @@ func main() {
 									}
 								}
 
-								if err := os.Rename(review.Path(internal.Accepted), review.Path(internal.Pending)); err != nil {
+								if err := os.Rename(review.Path(internal.Pending), review.Path(internal.Accepted)); err != nil {
 									return err
 								}
 							}
@@ -145,6 +145,6 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		fmt.Println("error:", err)
+		fmt.Println("error: ", err)
 	}
 }
