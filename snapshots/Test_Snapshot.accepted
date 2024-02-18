@@ -1,1 +1,4 @@
-testStruct{example: "test", again: 5}
+(bromide_test.testStruct) {
+  example: (*string)((len=5) "hello"),
+  again: (int) 5
+}

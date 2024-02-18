@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hexops/valast"
-	"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/cobbinma/bromide/internal"
+	"github.com/davecgh/go-spew/spew"
 )
 
 const folder = "snapshots"
@@ -18,12 +18,12 @@ func Snapshot[K comparable](t *testing.T, item K) {
 
 	currentDir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Error getting current directory: %v", err)
+		t.Errorf("error getting current directory: %v", err)
 	}
 
 	snapshotDir := fmt.Sprintf("%s/%s", currentDir, folder)
-	accepted := fmt.Sprintf("%s/%s.accepted", snapshotDir, t.Name())
-	neww := fmt.Sprintf("%s/%s.new", snapshotDir, t.Name())
+	acceptedPath := fmt.Sprintf("%s/%s%s", snapshotDir, t.Name(), internal.Accepted.Extension())
+	pendingPath := fmt.Sprintf("%s/%s%s", snapshotDir, t.Name(), internal.Pending.Extension())
 
 	incoming := serialize(item)
 
@@ -31,14 +31,14 @@ func Snapshot[K comparable](t *testing.T, item K) {
 		panic("unable to create snapshot directory")
 	}
 
-	file, err := os.Open(accepted)
+	file, err := os.Open(acceptedPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			panic("unable to open existing snapshot")
 		}
 
 		// test does not have accepted snapshot
-		file, err := os.OpenFile(neww, os.O_RDWR|os.O_CREATE, 0644)
+		file, err := os.OpenFile(pendingPath, os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			panic("unable to create new snapshot" + err.Error())
 		}
@@ -49,6 +49,7 @@ func Snapshot[K comparable](t *testing.T, item K) {
 		}
 
 		t.Errorf("new snapshot 📸")
+		t.Log("to update snapshots run `bromide review`")
 		return
 	}
 	defer file.Close()
@@ -58,14 +59,13 @@ func Snapshot[K comparable](t *testing.T, item K) {
 	io.Copy(existing, file)
 
 	if existing.String() != incoming {
-		dmp := diffmatchpatch.New()
+		diff := internal.Diff(existing.String(), incoming)
 
-		diffs := dmp.DiffMain(existing.String(), incoming, true)
+		t.Log("snapshot mismatch")
+		t.Log(diff)
+		t.Log("to update snapshots run `bromide review`")
 
-		t.Log("snapshot does not match")
-		t.Log(dmp.DiffPrettyText(diffs))
-
-		os.WriteFile(neww, []byte(incoming), 0644)
+		os.WriteFile(pendingPath, []byte(incoming), 0644)
 
 		t.Fail()
 		return
@@ -73,5 +73,13 @@ func Snapshot[K comparable](t *testing.T, item K) {
 }
 
 func serialize[K any](item K) string {
-	return valast.StringWithOptions(item, &valast.Options{Unqualify: false})
+	config := &spew.ConfigState{
+		Indent:                  "  ",
+		SortKeys:                true,
+		DisablePointerAddresses: true,
+		DisableCapacities:       true,
+		SpewKeys:                true,
+		DisableMethods:          false,
+	}
+	return config.Sdump(item)
 }

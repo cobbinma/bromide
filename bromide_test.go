@@ -7,14 +7,16 @@ import (
 )
 
 type testStruct struct {
-	example string
+	example *string
 	again   int
 }
 
 func Test_Snapshot(t *testing.T) {
+	text := "hello"
 	hello := testStruct{
-		example: "test",
+		example: &text,
 		again:   5,
 	}
+
 	bromide.Snapshot(t, hello)
 }

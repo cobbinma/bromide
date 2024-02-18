@@ -8,7 +8,6 @@ import (
 
 	"github.com/cobbinma/bromide/internal"
 	"github.com/manifoldco/promptui"
-	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/urfave/cli/v2"
 )
 
@@ -30,8 +29,29 @@ type Review struct {
 	new  Snapshot
 }
 
+func (r Review) TestName() string {
+	splits := strings.SplitAfter(r.path, "/")
+	if len(splits) == 0 {
+		return ""
+	}
+
+	return splits[len(splits)-1]
+}
+
 func (r Review) Path(status internal.ReviewState) string {
 	return r.path + status.Extension()
+}
+
+func (r Review) Title() string {
+	title := ""
+	switch {
+	case r.old == nil:
+		title = "New Snapshot"
+	default:
+		title = "Mismatched Snapshot"
+	}
+
+	return title
 }
 
 func main() {
@@ -92,14 +112,12 @@ func main() {
 							existing = string(review.old.contents)
 						}
 
-						dmp := diffmatchpatch.New()
-						diffs := dmp.DiffMain(existing, accepted, true)
-
-						fmt.Printf("reviewing %v of %v\n", i+1, len(reviews))
-						fmt.Println(dmp.DiffPrettyText(diffs))
+						fmt.Printf("reviewing %v of %v\n\n", i+1, len(reviews))
+						fmt.Printf("%s\n", review.TestName())
+						fmt.Println(internal.Diff(existing, accepted))
 
 						prompt := promptui.Select{
-							Label: "snapshot review",
+							Label: review.Title(),
 							Items: []string{
 								string(accept), string(reject), string(skip),
 							},
@@ -136,7 +154,7 @@ func main() {
 						}
 					}
 
-					fmt.Printf("reviewed %v snapshot(s) 📸\n", len(reviews))
+					fmt.Printf("\nreviewed %v snapshot(s) 📸\n", len(reviews))
 
 					return nil
 				},
