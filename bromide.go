@@ -49,7 +49,7 @@ func Snapshot[K comparable](t *testing.T, item K) {
 		}
 
 		t.Errorf("new snapshot 📸")
-		t.Log("to update snapshots run `bromide review`")
+		t.Log("to update snapshots run `bromide`")
 		return
 	}
 	defer file.Close()
@@ -63,7 +63,7 @@ func Snapshot[K comparable](t *testing.T, item K) {
 
 		t.Log("snapshot mismatch")
 		t.Log("\n" + diff)
-		t.Log("to update snapshots run `bromide review`")
+		t.Log("to update snapshots run `bromide`")
 
 		os.WriteFile(pendingPath, []byte(incoming), 0644)
 
