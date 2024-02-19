@@ -11,29 +11,37 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-const folder = "snapshots"
-
-func Snapshot[K comparable](t *testing.T, item K) {
+func Snapshot[K comparable](t *testing.T, item K, options ...Option) {
 	t.Helper()
 
-	currentDir, err := os.Getwd()
-	if err != nil {
-		t.Error("bromide: unable to get working directory")
-		t.Log(err.Error())
-		return
+	config := &config{}
+	for _, option := range options {
+		option(config)
 	}
 
-	snapshotDir := fmt.Sprintf("%s/%s", currentDir, folder)
-	acceptedPath := fmt.Sprintf("%s/%s%s", snapshotDir, t.Name(), internal.Accepted.Extension())
-	pendingPath := fmt.Sprintf("%s/%s%s", snapshotDir, t.Name(), internal.Pending.Extension())
+	dir := config.snapshotDir
+	if dir == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			t.Error("bromide: unable to get working directory")
+			t.Log(err.Error())
+			return
 
-	incoming := serialize(item)
+		}
 
-	if err := os.MkdirAll(snapshotDir, 0755); err != nil {
+		dir = fmt.Sprintf("%s/snapshots", wd)
+	}
+
+	acceptedPath := fmt.Sprintf("%s/%s%s", dir, t.Name(), internal.Accepted.Extension())
+	pendingPath := fmt.Sprintf("%s/%s%s", dir, t.Name(), internal.Pending.Extension())
+
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		t.Error("bromide: unable to create snapshot directory")
 		t.Log(err.Error())
 		return
 	}
+
+	incoming := serialize(item)
 
 	file, err := os.Open(acceptedPath)
 	if err != nil {
@@ -58,8 +66,11 @@ func Snapshot[K comparable](t *testing.T, item K) {
 			return
 		}
 
-		t.Errorf("new snapshot 📸")
+		t.Log("new snapshot 📸")
 		t.Log("to update snapshots run `bromide`")
+		if !config.passPending {
+			t.Fail()
+		}
 		return
 	}
 	defer file.Close()
