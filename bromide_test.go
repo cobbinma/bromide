@@ -29,9 +29,10 @@ func Test_PendingSnapshot(t *testing.T) {
 
 	bromide.Snapshot(t, "something",
 		bromide.WithSnapshotDirectory(dir),
+		bromide.WithSnapshotTitle("title*/<"),
 		bromide.WithPassingNewSnapshots(true))
 
-	if _, err := os.Stat(fmt.Sprintf("%s/%s%s", dir, t.Name(), internal.Pending.Extension())); err != nil {
+	if _, err := os.Stat(fmt.Sprintf("%s/%s_title%s", dir, t.Name(), internal.Pending.Extension())); err != nil {
 		t.Error(err.Error())
 	}
 }

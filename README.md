@@ -20,20 +20,40 @@ go get github.com/cobbinma/bromide
 import github.com/cobbinma/bromide
 
 func TestSomething(t *testing.T) {
-    something := "something"
+    text := "world"
+    something := testStruct{
+      example: &text,
+      again:   5,
+    }
     
     bromide.Snapshot(t, something)
 }
+```
+
+```sh
+--- FAIL: Test_Snapshot (0.00s)
+    bromide_test.go:24: snapshot mismatch
+    bromide_test.go:24:
+        --- current
+        +++ incoming
+        @@ -1,4 +1,4 @@
+         (bromide_test.testStruct) {
+        -  example: (*string)((len=5) "hello"),
+        +  example: (*string)((len=5) "world"),
+           again: (int) 5
+         }
+
+
+    bromide_test.go:24: to update snapshot run `bromide`
+FAIL
+FAIL    github.com/cobbinma/bromide     0.211s
+FAIL
 ```
 
 ### Review
 
 ```sh
 go install github.com/cobbinma/bromide/cmd/bromide@master
-```
-
-```sh
-bromide
 ```
 
 ![screenshot](./assets/Screenshot.png)

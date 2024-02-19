@@ -32,8 +32,13 @@ func Snapshot[K comparable](t *testing.T, item K, options ...Option) {
 		dir = fmt.Sprintf("%s/snapshots", wd)
 	}
 
-	acceptedPath := fmt.Sprintf("%s/%s%s", dir, t.Name(), internal.Accepted.Extension())
-	pendingPath := fmt.Sprintf("%s/%s%s", dir, t.Name(), internal.Pending.Extension())
+	title := ""
+	if config.title != "" {
+		title = "_" + config.title
+	}
+
+	acceptedPath := fmt.Sprintf("%s/%s%s%s", dir, t.Name(), title, internal.Accepted.Extension())
+	pendingPath := fmt.Sprintf("%s/%s%s%s", dir, t.Name(), title, internal.Pending.Extension())
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		t.Error("bromide: unable to create snapshot directory")
@@ -67,7 +72,7 @@ func Snapshot[K comparable](t *testing.T, item K, options ...Option) {
 		}
 
 		t.Log("new snapshot 📸")
-		t.Log("to update snapshots run `bromide`")
+		t.Log("to accept snapshot run `bromide`")
 		if !config.passNew {
 			t.Fail()
 		}
@@ -88,7 +93,7 @@ func Snapshot[K comparable](t *testing.T, item K, options ...Option) {
 
 		t.Log("snapshot mismatch")
 		t.Log("\n" + diff)
-		t.Log("to update snapshots run `bromide`")
+		t.Log("to update snapshot run `bromide`")
 
 		if err := os.WriteFile(pendingPath, []byte(incoming), 0644); err != nil {
 			t.Error("bromide: unable to write pending snapshot")
