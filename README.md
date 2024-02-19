@@ -30,7 +30,7 @@ func TestSomething(t *testing.T) {
 }
 ```
 
-```sh
+```
 --- FAIL: Test_Snapshot (0.00s)
     bromide_test.go:24: snapshot mismatch
     bromide_test.go:24:
