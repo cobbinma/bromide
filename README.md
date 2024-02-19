@@ -64,7 +64,17 @@ FAIL
 ### Review
 
 ```sh
-go install github.com/cobbinma/bromide/cmd/bromide@master
+go install github.com/cobbinma/bromide/cmd/bromide@v0.0.1
 ```
 
 ![screenshot](./assets/Screenshot.png)
+
+## See Also
+
+* [cupaloy](https://github.com/bradleyjkemp/cupaloy)
+
+## Thanks
+
+* [cupaloy](https://github.com/bradleyjkemp/cupaloy)
+* [insta](https://github.com/mitsuhiko/insta)
+* [birdie](https://github.com/giacomocavalieri/birdie)
