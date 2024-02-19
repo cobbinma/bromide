@@ -1,6 +1,17 @@
-# bromide
+<div align="center">
+<h1 align="center">bromide</h1>
+ <strong>
+  A snapshot testing library for go 📸
+ </strong>
+</div>
 
-A snapshot testing library for go 📸
+<br />
+
+<div align="center">
+ <br />
+ <img src="./assets/camera.png" height="auto" width="200">
+</div>
+
 
 ## Introduction
 
