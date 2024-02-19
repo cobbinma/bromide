@@ -18,7 +18,9 @@ func Snapshot[K comparable](t *testing.T, item K) {
 
 	currentDir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("error getting current directory: %v", err)
+		t.Error("bromide: unable to get working directory")
+		t.Log(err.Error())
+		return
 	}
 
 	snapshotDir := fmt.Sprintf("%s/%s", currentDir, folder)
@@ -28,24 +30,32 @@ func Snapshot[K comparable](t *testing.T, item K) {
 	incoming := serialize(item)
 
 	if err := os.MkdirAll(snapshotDir, 0755); err != nil {
-		panic("unable to create snapshot directory")
+		t.Error("bromide: unable to create snapshot directory")
+		t.Log(err.Error())
+		return
 	}
 
 	file, err := os.Open(acceptedPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			panic("unable to open existing snapshot")
+			t.Error("bromide: unable to open accepted snapshot")
+			t.Log(err.Error())
+			return
 		}
 
 		// test does not have accepted snapshot
 		file, err := os.OpenFile(pendingPath, os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
-			panic("unable to create new snapshot" + err.Error())
+			t.Error("bromide: unable to open pending snapshot")
+			t.Log(err.Error())
+			return
 		}
 		defer file.Close()
 
 		if _, err := file.WriteString(incoming); err != nil {
-			panic("unable to create new snapshot")
+			t.Error("bromide: unable to write pending snapshot")
+			t.Log(err.Error())
+			return
 		}
 
 		t.Errorf("new snapshot 📸")
@@ -56,7 +66,11 @@ func Snapshot[K comparable](t *testing.T, item K) {
 
 	// test has accepted snapshot
 	existing := new(strings.Builder)
-	io.Copy(existing, file)
+	if _, err := io.Copy(existing, file); err != nil {
+		t.Error("bromide: unable to copy accepted file")
+		t.Log(err.Error())
+		return
+	}
 
 	if existing.String() != incoming {
 		diff := internal.Diff(existing.String(), incoming)
@@ -65,7 +79,11 @@ func Snapshot[K comparable](t *testing.T, item K) {
 		t.Log("\n" + diff)
 		t.Log("to update snapshots run `bromide`")
 
-		os.WriteFile(pendingPath, []byte(incoming), 0644)
+		if err := os.WriteFile(pendingPath, []byte(incoming), 0644); err != nil {
+			t.Error("bromide: unable to write pending snapshot")
+			t.Log(err.Error())
+			return
+		}
 
 		t.Fail()
 		return
