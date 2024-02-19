@@ -35,3 +35,5 @@ go install github.com/cobbinma/bromide/cmd/bromide@master
 ```sh
 bromide
 ```
+
+![screenshot](./assets/Screenshot.png)
