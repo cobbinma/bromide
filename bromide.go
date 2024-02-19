@@ -68,7 +68,7 @@ func Snapshot[K comparable](t *testing.T, item K, options ...Option) {
 
 		t.Log("new snapshot 📸")
 		t.Log("to update snapshots run `bromide`")
-		if !config.passPending {
+		if !config.passNew {
 			t.Fail()
 		}
 		return
