@@ -42,7 +42,7 @@ func TestSomething(t *testing.T) {
 ```
 
 ```
---- FAIL: Test_Snapshot (0.00s)
+--- FAIL: TestSomething (0.00s)
     bromide_test.go:24: snapshot mismatch
     bromide_test.go:24:
         --- current
