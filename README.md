@@ -64,7 +64,7 @@ FAIL
 ### Review
 
 ```sh
-go install github.com/cobbinma/bromide/cmd/bromide@v0.0.1
+go install github.com/cobbinma/bromide/cmd/bromide@v0.0.2
 ```
 
 ![screenshot](./assets/Screenshot.png)

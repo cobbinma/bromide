@@ -11,7 +11,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-func Snapshot[K comparable](t *testing.T, item K, options ...Option) {
+func Snapshot[K any](t *testing.T, item K, options ...Option) {
 	t.Helper()
 
 	config := &config{}
