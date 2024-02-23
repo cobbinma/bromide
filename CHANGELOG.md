@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Doc comments
 
+### Changed
+
+- Use `.snap` instead of `.accepted` extension for accepted snapshots
+
 ### Fixed
 
 - Sanitize test names before using as filenames

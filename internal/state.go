@@ -12,7 +12,7 @@ func (s ReviewState) Extension() (extension string) {
 	case Pending:
 		extension = ".new"
 	case Accepted:
-		extension = ".accepted"
+		extension = ".snap"
 	}
 
 	return
