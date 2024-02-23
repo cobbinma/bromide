@@ -1,3 +1,16 @@
+/*
+Bromide reviews any pending snapshots that were created with the bromide
+snapshot library.
+
+A snapshot review can be:
+* Accepted
+* Rejected
+* Skipped
+
+Usage:
+
+	bromide
+*/
 package main
 
 import (

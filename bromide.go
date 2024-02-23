@@ -1,3 +1,6 @@
+// Bromide is a snapshot library, designed to simplify managing snapshot tests.
+//
+// Snapshot tests are useful if inputs are large or change often.
 package bromide
 
 import (
@@ -11,6 +14,13 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
+// Snapshot compares a given input against a reference value.
+// The test will fail if the value does not match, or a new snapshot is created.
+//
+// If the test fails, use bromide to interactively review changes.
+// ```
+// $ bromide
+// ````
 func Snapshot[K any](t *testing.T, item K, options ...Option) {
 	t.Helper()
 
