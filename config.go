@@ -1,6 +1,8 @@
 package bromide
 
-import "regexp"
+import (
+	"github.com/cobbinma/bromide/internal"
+)
 
 type Option func(*config)
 
@@ -19,20 +21,11 @@ func WithSnapshotDirectory(directory string) Option {
 }
 
 // WithSnapshotTitle
-// add an optional title to a snapshot
+// appends an optional title to a snapshot
 // useful if tests have multiple snapshots
 func WithSnapshotTitle(title string) Option {
 	return func(c *config) {
-		// Define a regular expression pattern to match invalid characters
-		pattern := "[\\/\\\\\\x00:\\*\\?\"<>\\|&\\#]"
-
-		// Compile the regular expression pattern
-		regex := regexp.MustCompile(pattern)
-
-		// Replace invalid characters with an empty string
-		stripped := regex.ReplaceAllString(title, "")
-
-		c.title = stripped
+		c.title = internal.Sanitize(title)
 	}
 }
 

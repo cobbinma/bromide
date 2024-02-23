@@ -47,8 +47,10 @@ func Snapshot[K any](t *testing.T, item K, options ...Option) {
 		title = "_" + config.title
 	}
 
-	acceptedPath := fmt.Sprintf("%s/%s%s%s", dir, t.Name(), title, internal.Accepted.Extension())
-	pendingPath := fmt.Sprintf("%s/%s%s%s", dir, t.Name(), title, internal.Pending.Extension())
+	name := internal.Sanitize(t.Name())
+
+	acceptedPath := fmt.Sprintf("%s/%s%s%s", dir, name, title, internal.Accepted.Extension())
+	pendingPath := fmt.Sprintf("%s/%s%s%s", dir, name, title, internal.Pending.Extension())
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		t.Error("bromide: unable to create snapshot directory")

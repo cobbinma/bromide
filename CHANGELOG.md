@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Doc comments
 
+### Fixed
+
+- Sanitize test names before using as filenames
+
 ## [0.0.2] - 2024-02-22
 
 ### Changed

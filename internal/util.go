@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/hexops/gotextdiff"
@@ -35,4 +36,15 @@ func Diff(old, new string) string {
 	}
 
 	return out
+}
+
+func Sanitize(input string) string {
+	// Define a regular expression pattern to match invalid characters
+	pattern := "[\\/\\\\\\x00:\\*\\?\"<>\\|&\\#]"
+
+	// Compile the regular expression pattern
+	regex := regexp.MustCompile(pattern)
+
+	// Replace invalid characters with an empty string
+	return regex.ReplaceAllString(input, "")
 }
