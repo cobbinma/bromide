@@ -15,17 +15,21 @@
 
 ## Introduction
 
-Bromide is a snapshot library for Go, designed to simplify managing snapshot tests. 
+Bromide is a snapshot library for Go, designed to simplify managing snapshot tests.
 
 With Bromide, you can easily capture test output and then review any differences against expected values.
 
 ## Usage
 
-### Write
+### 1. Write a Snapshot Test
+
+Install the library:
 
 ```sh
 go get github.com/cobbinma/bromide
 ```
+
+Write a test that calls `bromide.Snapshot`:
 
 ```go
 import github.com/cobbinma/bromide
@@ -36,10 +40,20 @@ func TestSomething(t *testing.T) {
       example: &text,
       again:   5,
     }
-    
+
     bromide.Snapshot(t, something)
 }
 ```
+
+### 2. Run Your Tests
+
+Run your tests as usual:
+
+```sh
+go test ./...
+```
+
+If the snapshot does not match, you will see output like:
 
 ```
 --- FAIL: TestSomething (0.00s)
@@ -54,18 +68,27 @@ func TestSomething(t *testing.T) {
            again: (int) 5
          }
 
-
-    bromide_test.go:24: to update snapshot run `bromide`
+    bromide_test.go:24: to review and approve new snapshots, run `bromide`
 FAIL
 FAIL    github.com/cobbinma/bromide     0.211s
 FAIL
 ```
 
-### Review
+### 3. Review and Approve Snapshot Changes
+
+Install the Bromide CLI if you haven't already:
 
 ```sh
 go install github.com/cobbinma/bromide/cmd/bromide@v0.0.2
 ```
+
+Run the review tool to inspect and approve changed snapshots:
+
+```sh
+bromide
+```
+
+This will show you a UI to review, approve, or reject snapshot updates.
 
 ![screenshot](./assets/Screenshot.png)
 
